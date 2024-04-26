@@ -2,10 +2,12 @@ package com.neo.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Embeddable;
-import lombok.ToString;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@ToString
+@Data
 @Embeddable
+@NoArgsConstructor
 public class Address {
 
     @JsonProperty("city")
