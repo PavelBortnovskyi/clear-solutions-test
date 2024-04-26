@@ -6,19 +6,15 @@ import com.neo.dto.rs.UserDTOrs;
 import com.neo.exceptions.validation.AgeException;
 import com.neo.exceptions.validation.UserNotFoundException;
 import com.neo.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +51,7 @@ public class UserService {
     public UserDTOrs updateUser(Long userId, UserDTOrq userDTOrq) {
         checkUserAge(userDTOrq.getBirthDate());
         User userToUpdate = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with id: %s is not present")));
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with id: %d is not present", userId)));
         userToUpdate = modelMapper.map(userDTOrq, User.class);
         userToUpdate.setId(userId);
         userRepository.save(userToUpdate);
@@ -67,7 +63,7 @@ public class UserService {
     @Modifying
     public UserDTOrs patchUser(Long userId, UserDTOrq userDTOrq) {
         User userToPatch = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with id: %s is not present")));
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with id: %d is not present", userId)));
 
         recursiveUpdateFields(userToPatch, userDTOrq);
 
@@ -88,13 +84,12 @@ public class UserService {
                 .map(u -> modelMapper.map(u, UserDTOrs.class));
     }
 
-    private void checkUserAge(LocalDate userBirthDate) {
+    void checkUserAge(LocalDate userBirthDate) {
         if (userBirthDate != null && userBirthDate.isAfter(LocalDate.now().minusYears(ageLimit)))
             throw new AgeException("You are too young my friend! This service is only for 18+ people");
     }
 
-    @SneakyThrows
-    private void recursiveUpdateFields(Object objectToPatch, Object sourceObject) {
+    void recursiveUpdateFields(Object objectToPatch, Object sourceObject) {
         Field[] fields = sourceObject.getClass().getDeclaredFields();
         List<Object> objectsToDelete = new ArrayList<>();
 

@@ -1,14 +1,16 @@
 package com.neo.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@ToString
 @Embeddable
+@Data
+@NoArgsConstructor
 public class Phone {
 
     @JsonProperty("number")
@@ -18,7 +20,7 @@ public class Phone {
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    enum Type {
+    public enum Type {
         HOME, WORK, MOBILE
     }
 }
