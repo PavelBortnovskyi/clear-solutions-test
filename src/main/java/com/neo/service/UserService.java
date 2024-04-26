@@ -14,7 +14,11 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,15 +76,16 @@ public class UserService {
 
     @Modifying
     public void deleteUser(Long userId) {
-        User userToDelete = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with id: %s is not present")));
         userRepository.deleteById(userId);
     }
 
     @Transactional(readOnly = true)
-    public List<UserDTOrs> findUsersByBirthDateInRange(LocalDate from, LocalDate to) {
-        //call DB by repository to get UserDTOrs and wrap them in ApiResponse
-        return new ArrayList<>();
+    public Page<UserDTOrs> findUsersByBirthDateInRange(LocalDate from, LocalDate to, int size, int page) {
+        if (from.isAfter(to)) {
+           throw new IllegalArgumentException("From is after than to in range!");
+        }
+        return userRepository.findByBirthDateBetween(from, to, Pageable.ofSize(size).withPage(page))
+                .map(u -> modelMapper.map(u, UserDTOrs.class));
     }
 
     private void checkUserAge(LocalDate userBirthDate) {

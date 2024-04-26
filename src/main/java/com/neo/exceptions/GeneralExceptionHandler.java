@@ -44,4 +44,10 @@ public class GeneralExceptionHandler {
     public ValidationErrorResponse onMethodUserIdNotValidException(Exception e) {
         return new ValidationErrorResponse(List.of(new Violation("userId", e.getMessage())));
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ValidationErrorResponse onMethodDateRangeIsNotValid(Exception e) {
+        return new ValidationErrorResponse(List.of(new Violation("fromDate", e.getMessage())));
+    }
 }
