@@ -50,10 +50,10 @@ public class UserService {
     @Modifying
     public UserDTOrs updateUser(Long userId, UserDTOrq userDTOrq) {
         checkUserAge(userDTOrq.getBirthDate());
-        User userToUpdate = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with id: %d is not present", userId)));
-        userToUpdate = modelMapper.map(userDTOrq, User.class);
-        userToUpdate.setId(userId);
+        User userToUpdate = modelMapper.map(userDTOrq, User.class);
+
+        if (userRepository.findById(userId).isPresent()) userToUpdate.setId(userId);
+
         userRepository.save(userToUpdate);
         log.info("User with id: {} updated!", userId);
         return modelMapper.map(userToUpdate, UserDTOrs.class);
@@ -62,6 +62,7 @@ public class UserService {
     @Transactional
     @Modifying
     public UserDTOrs patchUser(Long userId, UserDTOrq userDTOrq) {
+        checkUserAge(userDTOrq.getBirthDate());
         User userToPatch = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(String.format("User with id: %d is not present", userId)));
 
@@ -76,11 +77,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserDTOrs> findUsersByBirthDateInRange(LocalDate from, LocalDate to, int size, int page) {
+    public Page<UserDTOrs> findUsersByBirthDateInRange(LocalDate from, LocalDate to, Pageable pageable) {
         if (from.isAfter(to)) {
-           throw new IllegalArgumentException("From is after than to in range!");
+            throw new IllegalArgumentException("From is after than to in range!");
         }
-        return userRepository.findByBirthDateBetween(from, to, Pageable.ofSize(size).withPage(page))
+        return userRepository.findByBirthDateBetween(from, to, pageable)
                 .map(u -> modelMapper.map(u, UserDTOrs.class));
     }
 

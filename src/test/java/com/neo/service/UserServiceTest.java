@@ -6,16 +6,16 @@ import com.neo.domain.User;
 import com.neo.dto.rq.UserDTOrq;
 import com.neo.dto.rs.UserDTOrs;
 import com.neo.exceptions.validation.AgeException;
+import com.neo.exceptions.validation.UserNotFoundException;
 import com.neo.repository.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -24,35 +24,34 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private ModelMapper modelMapper;
-
     @InjectMocks
     private UserService userService;
+    @Mock
+    private UserRepository userRepository;
+    @Spy
+    private ModelMapper modelMapper;
 
     private UserDTOrq userDTOrqSample1;
-
     private UserDTOrq userDTOrqSample2;
-
     private User userSample1;
-
     private User userSample2;
-
     private UserDTOrs userDTOrsSample1;
-
     private UserDTOrs userDTOrsSample2;
 
     @BeforeEach
-    public void init() {
+    public void setUp() {
         ReflectionTestUtils.setField(userService, "ageLimit", 18);
+
+        modelMapper.getConfiguration().setFieldMatchingEnabled(true)
+                .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE)
+                .setPropertyCondition(u -> u.getSource() != null);
+
         userDTOrqSample1 = new UserDTOrq();
         userDTOrqSample1.setFirstName("John");
         userDTOrqSample1.setLastName("Doe");
@@ -106,7 +105,7 @@ public class UserServiceTest {
         Phone user2Phone1 = new Phone();
         user2Phone1.setNumber("222-222");
         user2Phone1.setType(Phone.Type.WORK);
-        userDTOrqSample1.setPhones(List.of(user2Phone1));
+        userDTOrqSample2.setPhones(List.of(user2Phone1));
 
         userSample2 = new User();
         userSample2.setId(2L);
@@ -137,27 +136,34 @@ public class UserServiceTest {
     @Test
     public void testCreateUserReturnsUserDTOrs() {
         when(userRepository.save(any(User.class))).thenReturn(userSample1);
-        when(modelMapper.map(any(UserDTOrq.class), Mockito.eq(User.class))).thenReturn(userSample1);
-        when(modelMapper.map(any(User.class), Mockito.eq(UserDTOrs.class))).thenReturn(userDTOrsSample1);
 
         UserDTOrs savedUserDTOrs = userService.createUser(userDTOrqSample1);
 
         Assertions.assertThat(savedUserDTOrs).isNotNull();
         Assertions.assertThat(savedUserDTOrs.equals(userDTOrsSample1)).isTrue();
+        verify(userRepository, Mockito.times(1)).save(any(User.class));
     }
 
     @Test
     public void testUpdateUserReturnsUserDTOrs() {
         when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(userSample1));
-        when(modelMapper.map(any(UserDTOrq.class), Mockito.eq(User.class))).thenReturn(userSample2);
         when(userRepository.save(any(User.class))).thenReturn(userSample2);
-        when(modelMapper.map(any(User.class), Mockito.eq(UserDTOrs.class))).thenReturn(userDTOrsSample2);
 
         UserDTOrs updatedUserDTOrs = userService.updateUser(1L, userDTOrqSample2);
 
         Assertions.assertThat(updatedUserDTOrs).isNotNull();
         Assertions.assertThat(updatedUserDTOrs.equals(userDTOrsSample2)).isTrue();
+        verify(userRepository, Mockito.times(1)).save(any(User.class));
     }
+
+//    @Test
+//    public void testUpdateUserThrowsException() {
+//        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+//        Assertions.assertThatThrownBy(() -> userService.updateUser(1L, userDTOrqSample1))
+//                .isInstanceOf(UserNotFoundException.class)
+//                .hasMessageContaining("User with id: 1 is not present");
+//        verify(userRepository, Mockito.times(0)).save(any(User.class));
+//    }
 
     @Test
     public void testRecursiveUpdateFields() {
@@ -183,7 +189,6 @@ public class UserServiceTest {
 
     }
 
-    //Useless...
     @Test
     public void testPatchUserReturnsUserDTOrs() {
         when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(userSample1));
@@ -191,21 +196,28 @@ public class UserServiceTest {
         UserDTOrq patchDTOrq = new UserDTOrq();
         patchDTOrq.setFirstName("Kevin");
 
-        userDTOrsSample1.setFirstName("Kevin");//!!!
-
-        when(modelMapper.map(any(User.class), Mockito.eq(UserDTOrs.class))).thenReturn(userDTOrsSample1);
-
         UserDTOrs patchedUserDTOrs = userService.patchUser(1L, patchDTOrq);
 
         Assertions.assertThat(patchedUserDTOrs).isNotNull();
         Assertions.assertThat(patchedUserDTOrs.getFirstName().equals("Kevin")).isTrue();
+        verify(userRepository, Mockito.times(1)).findById(anyLong());
+        verify(userRepository, Mockito.times(0)).save(any(User.class));
+    }
+
+    @Test
+    public void testPatchUserThrowsException() {
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+        Assertions.assertThatThrownBy(() -> userService.patchUser(1L, userDTOrqSample2))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("User with id: 1 is not present");
+        verify(userRepository, Mockito.times(0)).save(any(User.class));
     }
 
     @Test
     public void testFindUsersByBirthDateInRangeThrowsException() {
         LocalDate from = LocalDate.of(1800, 01, 01);
         LocalDate to = LocalDate.of(2024, 01, 01);
-        Assertions.assertThatThrownBy(() -> userService.findUsersByBirthDateInRange(to, from, 1, 0))
+        Assertions.assertThatThrownBy(() -> userService.findUsersByBirthDateInRange(to, from, Pageable.ofSize(1).withPage( 0)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("From is after than to in range!");
     }

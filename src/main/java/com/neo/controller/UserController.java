@@ -8,6 +8,7 @@ import com.neo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,11 +51,13 @@ public class UserController {
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<UserDTOrs> searchUsersByBirthDateRange(@RequestParam("from") LocalDate fromDate,
+    public ResponseEntity<Page<UserDTOrs>> searchUsersByBirthDateRange(@RequestParam("from") LocalDate fromDate,
                                                                         @RequestParam("to") LocalDate toDate,
                                                                         @RequestParam(value = "page", required = false) Integer page,
                                                                         @RequestParam(value = "size",required = false) Integer size) {
-        if (page == null || size == null) return userService.findUsersByBirthDateInRange(fromDate, toDate, Integer.MAX_VALUE, 0);
-        else return userService.findUsersByBirthDateInRange(fromDate, toDate, size, page);
+        if (page == null || size == null) return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.findUsersByBirthDateInRange(fromDate, toDate, Pageable.ofSize(Integer.MAX_VALUE).withPage(0)));
+        else return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.findUsersByBirthDateInRange(fromDate, toDate, Pageable.ofSize(size).withPage(page)));
     }
 }

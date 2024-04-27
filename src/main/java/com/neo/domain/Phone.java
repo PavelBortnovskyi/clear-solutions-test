@@ -6,10 +6,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@Embeddable
 @Data
+@Embeddable
 @NoArgsConstructor
 public class Phone {
 
