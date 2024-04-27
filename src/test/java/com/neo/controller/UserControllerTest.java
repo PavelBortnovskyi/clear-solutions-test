@@ -726,4 +726,28 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.number", CoreMatchers.is(1)))
                 .andDo(MockMvcResultHandlers.print());
     }
+
+    @Test
+    public void testSearchUsersByBirthDateRangeThrows() throws Exception {
+        LocalDate fromDate = LocalDate.of(1990, 1, 1);
+        LocalDate toDate = LocalDate.of(2000, 12, 31);
+
+        Pageable pageable = PageRequest.of(0, 100);
+
+        when(userService.findUsersByBirthDateInRange(eq(toDate), eq(fromDate), eq(pageable)))
+                .thenThrow(new IllegalArgumentException("From is after than to in range!"));
+
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users/search")
+                .param("from", toDate.toString())
+                .param("to", fromDate.toString())
+                .param("page", "0")
+                .param("size", "100"));
+
+        response.andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.violations[0].fieldName",
+                        CoreMatchers.is("fromDate")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.violations[0].message",
+                        CoreMatchers.is("From is after than to in range!")))
+                .andDo(MockMvcResultHandlers.print());
+    }
 }
