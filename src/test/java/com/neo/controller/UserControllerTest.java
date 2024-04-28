@@ -12,8 +12,7 @@ import com.neo.repository.UserRepository;
 import com.neo.service.UserService;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -46,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserControllerTest {
 
     @Autowired
@@ -142,6 +142,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(1)
     public void testCreateUser() throws Exception {
         when(userService.createUser(Mockito.any(UserDTOrq.class))).thenReturn(userDTOrsSample1);
 
@@ -170,6 +171,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(2)
     public void testCreateUserWithEmptyFirstName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setFirstName(null);
@@ -186,6 +188,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(3)
     public void testCreateUserWithEmptyLastName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setLastName(null);
@@ -204,6 +207,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(4)
     public void testCreateUserWithEmptyBirthDate() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setBirthDate(null);
@@ -222,6 +226,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(5)
     public void testCreateUserWithEmptyEmail() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setEmail(null);
@@ -240,6 +245,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(6)
     public void testCreateUserWithSingleCharFirstName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setFirstName("L");
@@ -258,6 +264,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(7)
     public void testCreateUserWithTooLongFirstName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setFirstName("Alexandrinosphorus Magnifico III");
@@ -276,6 +283,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(8)
     public void testCreateUserWithSingleCharLastName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setLastName("L");
@@ -294,6 +302,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(9)
     public void testCreateUserWithTooLongLastName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setLastName("Alexandrinosphorus Magnifico III");
@@ -312,6 +321,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(10)
     public void testCreateUserWithFutureBirthday() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setBirthDate(LocalDate.now().plusDays(1));
@@ -330,6 +340,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(11)
     public void testCreateUserTooYoung() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setBirthDate(LocalDate.now().minusDays(17));
@@ -349,6 +360,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(12)
     public void testCreateUserWithInvalidEmailFormat() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample1;
         invalidSample.setEmail("sdsgdbbfg.serjsgdf@ffdgf.khjkj");
@@ -367,6 +379,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(13)
     public void testUpdateUser() throws Exception {
         when(userService.updateUser(Mockito.anyLong(), Mockito.any(UserDTOrq.class))).thenReturn(userDTOrsSample2);
 
@@ -395,6 +408,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(14)
     public void testUpdateUserThrowsException() throws Exception {
         when(userService.updateUser(Mockito.anyLong(), Mockito.any(UserDTOrq.class)))
                 .thenThrow(new UserNotFoundException("User with id: 1 is not present"));
@@ -412,6 +426,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(15)
     public void testUpdateUserWithEmptyFirstName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setFirstName(null);
@@ -428,6 +443,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(16)
     public void testUpdateUserWithEmptyLastName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setLastName(null);
@@ -446,6 +462,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(17)
     public void testUpdateUserWithEmptyBirthDate() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setBirthDate(null);
@@ -464,6 +481,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(18)
     public void testUpdateUserWithEmptyEmail() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setEmail(null);
@@ -482,6 +500,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(19)
     public void testUpdateUserWithSingleCharFirstName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setFirstName("L");
@@ -500,6 +519,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(20)
     public void testUpdateUserWithTooLongFirstName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setFirstName("Alexandrinosphorus Magnifico III");
@@ -518,6 +538,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(21)
     public void testUpdateUserWithSingleCharLastName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setLastName("L");
@@ -536,6 +557,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(22)
     public void testUpdateUserWithTooLongLastName() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setLastName("Alexandrinosphorus Magnifico III");
@@ -554,6 +576,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(23)
     public void testUpdateUserWithFutureBirthday() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setBirthDate(LocalDate.now().plusDays(1));
@@ -572,6 +595,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(24)
     public void testUpdateUserTooYoung() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setBirthDate(LocalDate.now().minusDays(17));
@@ -591,6 +615,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(25)
     public void testUpdateUserWithInvalidEmailFormat() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setEmail("sdsgdbbfg.serjsgdf@ffdgf.khjkj");
@@ -609,6 +634,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(26)
     public void testPatchUser() throws Exception {
         UserDTOrq patchDTO = new UserDTOrq();
         patchDTO.setEmail("newMail@ukr.net");
@@ -651,6 +677,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(27)
     public void testPatchUserTooYoung() throws Exception {
         UserDTOrq invalidSample = userDTOrqSample2;
         invalidSample.setBirthDate(LocalDate.now().minusDays(17));
@@ -670,6 +697,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(28)
     public void testDeleteUser() throws Exception {
         ResultActions response = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/users/1"));
 
@@ -677,6 +705,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(29)
     public void testSearchUsersByBirthDateRangeNoPageAndSize() throws Exception {
         LocalDate fromDate = LocalDate.of(1990, 1, 1);
         LocalDate toDate = LocalDate.of(2000, 12, 31);
@@ -701,6 +730,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(30)
     public void testSearchUsersByBirthDateRangeWithPageAndSize() throws Exception {
         LocalDate fromDate = LocalDate.of(1990, 1, 1);
         LocalDate toDate = LocalDate.of(2000, 12, 31);
@@ -728,6 +758,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @Order(31)
     public void testSearchUsersByBirthDateRangeThrows() throws Exception {
         LocalDate fromDate = LocalDate.of(1990, 1, 1);
         LocalDate toDate = LocalDate.of(2000, 12, 31);

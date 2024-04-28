@@ -9,8 +9,7 @@ import com.neo.exceptions.validation.AgeException;
 import com.neo.exceptions.validation.UserNotFoundException;
 import com.neo.repository.UserRepository;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserServiceTest {
     @InjectMocks
     private UserService userService;
@@ -126,6 +126,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Order(1)
     public void testCheckUserAgeThrowsException() {
         LocalDate age = LocalDate.now().minusDays(1);
         Assertions.assertThatThrownBy(() -> userService.checkUserAge(age))
@@ -134,6 +135,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Order(2)
     public void testCreateUserReturnsUserDTOrs() {
         when(userRepository.save(any(User.class))).thenReturn(userSample1);
 
@@ -145,6 +147,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Order(3)
     public void testUpdateUserReturnsUserDTOrs() {
         when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(userSample1));
         when(userRepository.save(any(User.class))).thenReturn(userSample2);
@@ -156,16 +159,8 @@ public class UserServiceTest {
         verify(userRepository, Mockito.times(1)).save(any(User.class));
     }
 
-//    @Test
-//    public void testUpdateUserThrowsException() {
-//        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
-//        Assertions.assertThatThrownBy(() -> userService.updateUser(1L, userDTOrqSample1))
-//                .isInstanceOf(UserNotFoundException.class)
-//                .hasMessageContaining("User with id: 1 is not present");
-//        verify(userRepository, Mockito.times(0)).save(any(User.class));
-//    }
-
     @Test
+    @Order(4)
     public void testRecursiveUpdateFields() {
         UserDTOrq patchDTOrq = new UserDTOrq();
         patchDTOrq.setFirstName("Kevin");
@@ -190,6 +185,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Order(5)
     public void testPatchUserReturnsUserDTOrs() {
         when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(userSample1));
 
@@ -205,6 +201,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Order(6)
     public void testPatchUserThrowsException() {
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
         Assertions.assertThatThrownBy(() -> userService.patchUser(1L, userDTOrqSample2))
@@ -214,6 +211,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Order(7)
     public void testFindUsersByBirthDateInRangeThrowsException() {
         LocalDate from = LocalDate.of(1800, 01, 01);
         LocalDate to = LocalDate.of(2024, 01, 01);
